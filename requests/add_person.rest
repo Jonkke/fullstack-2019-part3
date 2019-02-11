@@ -1,7 +1,8 @@
-POST https://tranquil-atoll-28380.herokuapp.com/api/persons
+//POST https://tranquil-atoll-28380.herokuapp.com/api/persons
+POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-    "name": "Test Person",
-    "number": "041-3469365"
+    "name": "Alhambra Zhazuba",
+    "number": "041-94590435"
 }
