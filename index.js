@@ -1,8 +1,16 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const morgan = require('morgan')
 const app = express()
 
 app.use(bodyParser.json())
+
+const unknowndEndPoint = (req, res, next) => {
+  res.status(404).send({error: 'Unknown endpoint!'})
+  next()
+}
+
+app.use(morgan('tiny'))
 
 let nrot = [
   {
@@ -86,6 +94,8 @@ app.delete('/api/persons/:id', (req, res) => {
   res.status(204).end()
 })
 
+app.use(unknowndEndPoint)
+
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`App now running on port ${PORT}`);
@@ -95,7 +105,6 @@ app.listen(PORT, () => {
 
 const genRandomId = () => {
   const num = Math.floor(Math.random() * 999999999)
-  console.log(num);
   return num
   
 }
