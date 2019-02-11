@@ -13,6 +13,7 @@ const unknowndEndPoint = (req, res, next) => {
 }
 
 app.use(morgan('tiny'))
+app.use(express.static('build'))
 
 let nrot = [
   {
