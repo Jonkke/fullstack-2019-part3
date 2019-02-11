@@ -1,8 +1,10 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 
+app.use(cors())
 app.use(bodyParser.json())
 
 const unknowndEndPoint = (req, res, next) => {
@@ -96,7 +98,7 @@ app.delete('/api/persons/:id', (req, res) => {
 
 app.use(unknowndEndPoint)
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`App now running on port ${PORT}`);
 })
@@ -106,5 +108,4 @@ app.listen(PORT, () => {
 const genRandomId = () => {
   const num = Math.floor(Math.random() * 999999999)
   return num
-  
 }
