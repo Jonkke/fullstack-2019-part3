@@ -1,4 +1,6 @@
-require('dotenv').config()
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
@@ -9,7 +11,6 @@ const app = express()
 // DB connection thru Mongo models
 const Person = require('./models/Person')
 
-let cachedPersons = [{}]
 let amountPersons = 0
 
 app.use(cors())
@@ -33,7 +34,6 @@ app.get('/info', (req, res, next) => {
 
 app.get('/api/persons', (req, res, next) => {
   Person.find({}).then(persons => {
-    cachedPersons = persons
     res.json(persons.map(person => person.toJSON()))
   }).catch(err => {
     next(err)
@@ -64,22 +64,19 @@ app.post('/api/persons/', (req, res, next) => {
       error: 'Number missing!'
     })
   }
-  duplicate = cachedPersons.find(p => p.name == body.name)
-  if (duplicate) {
-    return res.status(400).json({
-      error: `${body.name} is already in the database!`
-    })
-  }
 
   const person = new Person({
     name: body.name,
     number: body.number
   })
-  person.save().then(savedPerson => {
-    res.json(savedPerson.toJSON())
-    updateInfoPage()
-  }).catch(err => next(err)
-  )
+  person
+    .save()
+    .then(savedPerson => savedPerson.toJSON())
+    .then(savedAndFormattedPerson => {
+      res.json(savedAndFormattedPerson)
+      updateInfoPage()
+    })
+    .catch(err => next(err))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -118,6 +115,9 @@ const errorHandler = (error, req, res, next) => {
   console.error(error.message)
   if (error.name === 'CastError' && error.kind == 'ObjectId') {
     return res.status(400).send({ error: 'Malformed id' })
+  }
+  if (error.name === 'ValidationError') {
+    return res.status(400).send({ error: error.message })
   }
   next(error) // to the default error handler of express, if not CastError
 }

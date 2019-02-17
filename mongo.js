@@ -1,5 +1,4 @@
 // For testing and stuff, not used anywhere
-
 const mongoose = require('mongoose')
 
 if (process.argv.length < 3) {
@@ -14,8 +13,16 @@ const url = '' // MongoDB url
 mongoose.connect(url, { useNewUrlParser: true })
 
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String
+    name: {
+        type: String,
+        minlength: 3,
+        required: true
+    },
+    number: {
+        type: String,
+        minlength: 3,
+        required: true
+    }
 })
 
 const Person = mongoose.model('Person', personSchema)
