@@ -76,6 +76,25 @@ app.post('/api/persons/', (req, res, next) => {
   )
 })
 
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body
+  if (!body.name) {
+    return res.status(400).json({
+      error: 'Cannot update person without a name!'
+    })
+  }
+  if (!body.number) {
+    return res.status(400).json({
+      error: 'Number missing!'
+    })
+  }
+
+  Person.findByIdAndUpdate(req.params.id, {number: body.number}).then(savedPerson => {
+    res.json(savedPerson.toJSON())
+    updateInfoPage()
+  }).catch(err => next(err))
+})
+
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
     .then(result => {
