@@ -9,7 +9,8 @@ const app = express()
 // DB connection thru Mongo models
 const Person = require('./models/Person')
 
-const nrot = [{}] // delete
+let cachedPersons = [{}]
+let amountPersons = 0
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -17,17 +18,22 @@ app.use(bodyParser.json())
 app.use(morgan('tiny'))
 app.use(express.static('build'))
 
-let infoPageHtml = `<div><p>Puhelinluettelossa on ${nrot.length} henkilön tiedot.</p><p>${new Date()}</p></div>`
+let infoPageHtml = `<div><p>Puhelinluettelossa on ${amountPersons} henkilön tiedot.</p><p>${new Date()}</p></div>`
 const updateInfoPage = () => {
-  infoPageHtml = `<div><p>Puhelinluettelossa on ${nrot.length} henkilön tiedot.</p><p>${new Date()}</p></div>`
+  infoPageHtml = `<div><p>Puhelinluettelossa on ${amountPersons} henkilön tiedot.</p><p>${new Date()}</p></div>`
 }
 
-app.get('/info', (req, res) => {
-  res.send(infoPageHtml);
+app.get('/info', (req, res, next) => {
+  Person.find({}).then(persons => {
+    amountPersons = persons.length;
+    updateInfoPage();
+    res.send(infoPageHtml);
+  }).catch(err => next(err))
 })
 
 app.get('/api/persons', (req, res, next) => {
   Person.find({}).then(persons => {
+    cachedPersons = persons
     res.json(persons.map(person => person.toJSON()))
   }).catch(err => {
     next(err)
@@ -58,7 +64,7 @@ app.post('/api/persons/', (req, res, next) => {
       error: 'Number missing!'
     })
   }
-  duplicate = nrot.find(p => p.name == body.name)
+  duplicate = cachedPersons.find(p => p.name == body.name)
   if (duplicate) {
     return res.status(400).json({
       error: `${body.name} is already in the database!`
@@ -89,7 +95,7 @@ app.put('/api/persons/:id', (req, res, next) => {
     })
   }
 
-  Person.findByIdAndUpdate(req.params.id, {number: body.number}).then(savedPerson => {
+  Person.findByIdAndUpdate(req.params.id, { number: body.number }).then(savedPerson => {
     res.json(savedPerson.toJSON())
     updateInfoPage()
   }).catch(err => next(err))
