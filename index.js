@@ -5,7 +5,6 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
-const mongoose = require('mongoose')
 const app = express()
 
 // DB connection thru Mongo models
@@ -26,9 +25,9 @@ const updateInfoPage = () => {
 
 app.get('/info', (req, res, next) => {
   Person.find({}).then(persons => {
-    amountPersons = persons.length;
-    updateInfoPage();
-    res.send(infoPageHtml);
+    amountPersons = persons.length
+    updateInfoPage()
+    res.send(infoPageHtml)
   }).catch(err => next(err))
 })
 
@@ -100,7 +99,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
-    .then(result => {
+    .then(res => {
       res.status(204).end()
     }).catch(err => next(err))
 })
@@ -113,7 +112,7 @@ app.use(unknowndEndPoint)
 
 const errorHandler = (error, req, res, next) => {
   console.error(error.message)
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
     return res.status(400).send({ error: 'Malformed id' })
   }
   if (error.name === 'ValidationError') {
@@ -124,14 +123,7 @@ const errorHandler = (error, req, res, next) => {
 app.use(errorHandler)
 
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT
 app.listen(PORT, () => {
-  console.log(`App now running on port ${PORT}`);
+  console.log(`App now running on port ${PORT}`)
 })
-
-
-
-const genRandomId = () => {
-  const num = Math.floor(Math.random() * 999999999)
-  return num
-}
